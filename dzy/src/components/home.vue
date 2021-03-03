@@ -1,8 +1,19 @@
 <template>
   <el-main style="width: 100%">
-    <div class="topTitle">
-      <img src="../assets/top.png" alt />
-    </div>
+    <el-col :span="24" class="title text-right">
+      <el-button
+        type="primary"
+        round
+        class="mima"
+        @click="resetpasswordShow = true"
+        v-if="post !== -1"
+        >ResetPassword</el-button
+      >
+      <el-button type="primary" round class="logout" @click="logoutAdmin"
+        >Logout</el-button
+      >
+      <p></p>
+    </el-col>
     <div class="title mb-3">项目管理</div>
     <el-row class="mt-5">
       <el-col :span="1" :offset="2"
@@ -295,10 +306,51 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- 改密码 -->
+    <el-dialog
+      title="Change password"
+      :visible.sync="resetpasswordShow"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      width="35%"
+    >
+      <el-form
+        :model="passwordForm"
+        label-width="150px"
+        :rules="resetRules"
+        ref="passwordForm"
+      >
+        <el-form-item label="Original password :" prop="oldpass">
+          <el-input
+            v-model="passwordForm.oldpass"
+            type="password"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="New password :" prop="newpass1">
+          <el-input
+            v-model="passwordForm.newpass1"
+            type="password"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="Repassword :" prop="newpass2">
+          <el-input
+            v-model="passwordForm.newpass2"
+            type="password"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="resetpassword">确 定</el-button>
+      </div>
+    </el-dialog>
   </el-main>
 </template>
 
 <script>
+import { mapMutations } from "vuex";
 import {
   sel_project,
   sel_task,
@@ -311,10 +363,32 @@ import {
 } from "@/services/post";
 export default {
   data() {
+    let resetPass1 = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("Please enter your new password"));
+      } else {
+        if (this.passwordForm.newpass2 !== "") {
+          this.$refs.passwordForm.validateField("newpass2");
+        }
+        callback();
+      }
+    };
+    let resetPass2 = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("Please enter your new password again"));
+      } else if (value !== this.passwordForm.newpass1) {
+        callback(
+          new Error("The password is inconsistent between the two entries!")
+        );
+      } else {
+        callback();
+      }
+    };
     return {
       tableData: [],
       taskData: [],
       search: "",
+      resetpasswordShow: false,
       changeProjectShow: false,
       setProjectShow: false,
       changeTaskShow: false,
@@ -439,6 +513,22 @@ export default {
             trigger: "blur",
           },
         ],
+      },
+      passwordForm: {
+        oldpass: "",
+        newpass1: "",
+        newpass2: "",
+      },
+      resetRules: {
+        oldpass: [
+          {
+            required: true,
+            message: "Please enter your old password",
+            trigger: "blur",
+          },
+        ],
+        newpass1: [{ validator: resetPass1, trigger: "blur" }],
+        newpass2: [{ validator: resetPass2, trigger: "blur" }],
       },
     };
   },
@@ -664,6 +754,35 @@ export default {
     // 重置表格
     resetForm(formName) {
       this.$refs[formName].resetFields();
+    },
+    // 退出
+    ...mapMutations(["logout"]),
+    logoutAdmin() {
+      this.logout();
+      this.$router.push("/");
+    },
+    // 改密码
+    async resetpassword() {
+      reset_pass(
+        this.username,
+        this.passwordForm.oldpass,
+        this.passwordForm.newpass1
+      ).then((res) => {
+        if (res.code > 0) {
+          this.resetpasswordShow = false;
+          this.resetForm("passwordForm");
+          this.$message({
+            message: res.msg,
+            type: "success",
+          });
+        } else {
+          this.resetForm("passwordForm");
+          this.$message({
+            message: res.msg,
+            type: "warning",
+          });
+        }
+      });
     },
   },
 };

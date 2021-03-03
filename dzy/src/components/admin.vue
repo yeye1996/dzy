@@ -8,7 +8,7 @@
             round
             class="mima"
             @click="resetpasswordShow = true"
-            v-if="uid !== -1"
+            v-if="post !== -1"
             >ResetPassword</el-button
           >
           <el-button type="primary" round class="logout" @click="logoutAdmin"
@@ -21,7 +21,7 @@
           :gutter="40"
           style="width: 90%; margin: 0 auto; padding-top: 18vh"
         >
-          <el-col :span="8" class="mb-5">
+          <el-col :span="8" class="mb-5" v-if="post == -1">
             <el-card>
               <el-table
                 :data="
@@ -65,7 +65,7 @@
               </div>
             </el-card>
           </el-col>
-          <el-col :span="16" class="mb-5">
+          <el-col :span="post == -1 ? 16 : 24" class="mb-5">
             <el-card>
               <el-table
                 :data="userData"
@@ -133,7 +133,7 @@
               show-password
             ></el-input>
           </el-form-item>
-          <el-form-item label="Repasswprd：" prop="checkPass">
+          <el-form-item label="Repassword：" prop="checkPass">
             <el-input
               v-model="setAdmin.checkPass"
               autocomplete="off"
@@ -461,13 +461,12 @@ export default {
     };
   },
   computed: {
-    uid() {
-      return this.$store.state.user.uid;
+    post() {
+      return this.$store.state.user.post;
     },
     username() {
       return this.$store.state.user.uname;
     },
-    // 文章列表筛选
   },
   mounted() {
     this.adminShow();

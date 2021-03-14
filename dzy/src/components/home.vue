@@ -373,11 +373,28 @@
       :visible.sync="tjProjectShow"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-      width="60%"
+      width="30%"
     >
-      <div></div>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="setgangte">确 定</el-button>
+      <div style="margin-bottom: 20px">
+        <el-select v-model="value" placeholder="请选择">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+        <el-button type="primary" @click="setgangte">查 询</el-button>
+      </div>
+      <div>
+        <el-progress
+          style="width: 55%; margin: 0 auto"
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="percentage"
+          status="success"
+        ></el-progress>
       </div>
     </el-dialog>
   </el-main>
@@ -385,6 +402,7 @@
 
 <script>
 import { mapMutations } from "vuex";
+import $ from "jquery";
 import {
   sel_project,
   sel_task,
@@ -422,12 +440,32 @@ export default {
       tableData: [],
       taskData: [],
       search: "",
+      percentage: 20,
       resetpasswordShow: false,
       changeProjectShow: false,
       setProjectShow: false,
       changeTaskShow: false,
       setTaskShow: false,
       tjProjectShow: false,
+      options: [
+        {
+          value: "提前完成",
+          label: "提前完成",
+        },
+        {
+          value: "按时完成",
+          label: "按时完成",
+        },
+        {
+          value: "超时完成",
+          label: "超时完成",
+        },
+        {
+          value: "未完成",
+          label: "未完成",
+        },
+      ],
+      value: "",
       changeProject: {
         cpname: "",
         cptime: [],
@@ -574,6 +612,7 @@ export default {
     uname() {
       return this.$store.state.user.uname;
     },
+    // 筛选
     filterTag() {
       return (value, row) => {
         return row.ptype === value;
@@ -825,6 +864,19 @@ export default {
       });
     },
     // 统计完成情况
+    setgangte() {
+      this.percentage = 0;
+      let that = this;
+      if (that.taskData) {
+        var count  = 0;
+        that.taskData.forEach((e) => {
+          if (e.ttype == that.value) {
+            count = count + 1;
+          }
+        });
+      }
+      this.percentage = (count / that.taskData.length) * 100;
+    },
   },
 };
 </script>

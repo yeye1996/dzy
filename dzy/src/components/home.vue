@@ -24,6 +24,14 @@
           >创建新项目</el-button
         ></el-col
       >
+      <el-col :span="1" :offset="1"
+        ><el-button
+          type="primary"
+          icon="el-icon-search"
+          @click="tjProjectShow = true"
+          >统计项目进度</el-button
+        ></el-col
+      >
     </el-row>
     <el-row>
       <el-col :span="20" :offset="2">
@@ -49,7 +57,21 @@
               </el-date-picker></template
           ></el-table-column>
           <el-table-column prop="ppeople" label="成员"></el-table-column>
-          <el-table-column prop="ptype" width="130" label="状态">
+          <el-table-column
+            prop="ptype"
+            width="130"
+            label="状态"
+            :filters="[
+              { text: '计划', value: '计划' },
+              { text: '实施', value: '实施' },
+              { text: '结束', value: '结束' },
+              { text: '取消', value: '取消' },
+            ]"
+            :filter-method="filterTag"
+          >
+            <template slot-scope="scope">
+              {{ scope.row.ptype }}
+            </template>
           </el-table-column>
           <el-table-column align="right" width="320">
             <template slot="header" slot-scope="scope">
@@ -346,6 +368,18 @@
         <el-button type="primary" @click="resetpassword">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog
+      title="项目进度"
+      :visible.sync="tjProjectShow"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      width="60%"
+    >
+      <div></div>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="setgangte">确 定</el-button>
+      </div>
+    </el-dialog>
   </el-main>
 </template>
 
@@ -393,6 +427,7 @@ export default {
       setProjectShow: false,
       changeTaskShow: false,
       setTaskShow: false,
+      tjProjectShow: false,
       changeProject: {
         cpname: "",
         cptime: [],
@@ -538,6 +573,11 @@ export default {
     },
     uname() {
       return this.$store.state.user.uname;
+    },
+    filterTag() {
+      return (value, row) => {
+        return row.ptype === value;
+      };
     },
   },
   mounted() {
@@ -784,6 +824,7 @@ export default {
         }
       });
     },
+    // 统计完成情况
   },
 };
 </script>

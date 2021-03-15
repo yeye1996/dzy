@@ -79,14 +79,18 @@ export default {
     };
   },
   methods: {
+    // 引入状态管理方法
     ...mapMutations(["addpost", "addusername"]),
     submitForm(formName) {
       let that = this;
+      // 验证是否填写必填选项
       that.$refs[formName].validate((valid) => {
         if (valid) {
+          // 判断是不是超级管理员
           if (that.form.name == "root") {
             for (let i of that.superUser) {
               if (i.uname == that.form.name && i.upwd == that.form.password) {
+                // 将id  name存在状态管理器中，方便全局使用
                 that.addpost(i.uid);
                 that.addusername(i.uname);
                 that.$router.push("/admin");
@@ -95,17 +99,21 @@ export default {
             }
             return;
           } else {
+            // 验证登录接口
             user_login({
               uname: this.form.name,
               upwd: this.form.password,
             }).then((res) => {
+              // 如返回码大于1则登录成功，存name id
               if (res.code > 0) {
                 that.addpost(res.data[0]);
                 that.addusername(that.form.name);
+                // 判断使用户还是管理员，分别跳转页面
                 res.data[1] == "user"
                   ? that.$router.push("/home")
                   : that.$router.push("/admin");
               } else {
+                // 登录失败弹出提示框
                 that.$message.error("The account password is incorrect or expired");
                 that.$refs[formName].resetFields();
               }
@@ -117,6 +125,7 @@ export default {
         }
       });
     },
+    // 重置表单
     resetForm(formName) {
       this.$refs[formName].resetFields();
     },

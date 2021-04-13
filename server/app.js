@@ -29,9 +29,10 @@ server.listen(3000);
 server.post("/login", (req, res) => {
   let uname = req.body.uname;
   let upwd = req.body.upwd;
-  let sql = "SELECT post FROM user WHERE uname = ? AND upwd = md5(?)";
+  let sql = "SELECT post , dept FROM user WHERE uname = ? AND upwd = md5(?)";
   let obj = { code: 1, msg: "登录成功", data: [] }
   pool.query(sql, [uname, upwd], (err, result) => {
+    console.log(result)
     if (err) throw err;
     if (result.length == 0) {
       // 管理员登录
@@ -47,7 +48,7 @@ server.post("/login", (req, res) => {
       });
     } else {
       // 用户登录
-      obj.data = [result[0].post, "user"];
+      obj.data = [result[0].post, "user", result[0].dept];
       res.send(obj);
     }
   })
@@ -253,8 +254,19 @@ server.get("/selTask", (req, res) => {
     }
   });
 });
-// 事务员查询项目
-
+// 查询事务员
+server.get("/selUserShiwuyuan", (req, res) => {
+  let dept = req.query.dept;
+  let sql = "SELECT uid,uname FROM user WHERE dept=?";
+  pool.query(sql, [ dept], (err, result) => {
+    if (err) throw err;
+    if (result.length > 0) {
+      res.send({ code: 1, msg: "查询成功", data: result })
+    } else {
+      res.send({ code: -1, msg: "查询失败" })
+    }
+  });
+});
 
 
 // 删除管理员

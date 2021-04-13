@@ -80,7 +80,7 @@ export default {
   },
   methods: {
     // 引入状态管理方法
-    ...mapMutations(["addpost", "addusername"]),
+    ...mapMutations(["addpost", "addusername", "adddept"]),
     submitForm(formName) {
       let that = this;
       // 验证是否填写必填选项
@@ -107,6 +107,7 @@ export default {
               // 如返回码大于1则登录成功，存name id
               if (res.code > 0) {
                 that.addpost(res.data[0]);
+                that.adddept(res.data[2]);
                 that.addusername(that.form.name);
                 // 判断使用户还是管理员，分别跳转页面
                 res.data[1] == "user"
@@ -114,7 +115,9 @@ export default {
                   : that.$router.push("/admin");
               } else {
                 // 登录失败弹出提示框
-                that.$message.error("The account password is incorrect or expired");
+                that.$message.error(
+                  "The account password is incorrect or expired"
+                );
                 that.$refs[formName].resetFields();
               }
             });

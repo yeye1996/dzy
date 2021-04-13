@@ -7,12 +7,16 @@ const state = {
   user: {
     post: null,
     uname: "",
+    dept: null
   }
 }
 
 const mutations = {
   addpost(state, post) {
     state.user.post = post;
+  },
+  adddept(state, dept) {
+    state.user.dept = dept;
   },
   addusername(state, uname) {
     state.user.uname = uname;

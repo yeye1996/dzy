@@ -6,6 +6,8 @@ export const sel_user = params => { return request("/selUser", "get", params) };
 
 export const sel_project = params => { return request("/selProject", "get", params) };
 
+export const sel_user_shiwuyuan = params => { return request("/selUserShiwuyuan", "get", params) };
+
 export const sel_task = params => { return request("/selTask", "get", params) };
 
 export const sel_user_name = params => { return request("/selUserName", "get", params) };

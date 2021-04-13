@@ -21,6 +21,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="setProjectShow = true"
+          v-if="post == '项目经理'"
           >创建新项目</el-button
         ></el-col
       >
@@ -174,7 +175,20 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item label="人员：" prop="sppeople">
-          <el-input v-model="setProject.sppeople"></el-input>
+          <el-select
+            v-model="setProject.sppeople"
+            multiple
+            collapse-tags
+            placeholder="请选择人员"
+          >
+            <el-option
+              v-for="item in people_options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="addProject('setProject')"
@@ -412,6 +426,7 @@ import {
   change_task,
   add_project,
   add_task,
+  sel_user_shiwuyuan,
 } from "@/services/post";
 export default {
   data() {
@@ -447,6 +462,7 @@ export default {
       changeTaskShow: false,
       setTaskShow: false,
       tjProjectShow: false,
+      people_options: [],
       options: [
         {
           value: "提前完成",
@@ -609,6 +625,9 @@ export default {
     post() {
       return this.$store.state.user.post;
     },
+    dept() {
+      return this.$store.state.user.dept;
+    },
     uname() {
       return this.$store.state.user.uname;
     },
@@ -621,14 +640,15 @@ export default {
   },
   mounted() {
     this.projectShow();
+    this.post == "项目经理" ? this.sel_people() : "";
   },
   methods: {
     // 显示项目列表
     async projectShow() {
       const projectData = await sel_project({
         params: {
-          uname: this.uname,
           post: this.post,
+          dept: this.dept,
         },
       });
       let data = projectData.data;
@@ -636,6 +656,22 @@ export default {
         e.ptime = [e.pstart, e.pend];
       });
       this.tableData = data;
+    },
+    async sel_people() {
+      let that = this;
+      const bb = await sel_user_shiwuyuan({
+        params: {
+          dept: this.dept,
+        },
+      });
+      if (bb.data.length !== 0) {
+        bb.data.forEach((e) => {
+          that.people_options.push({
+            value: e.uname,
+            label: e.uname,
+          });
+        });
+      }
     },
     // 删除一个项目
     delproject(index, row) {
@@ -666,7 +702,7 @@ export default {
             that.setProject.sptime[0],
             that.setProject.sptime[1],
             that.setProject.sptype,
-            that.setProject.sppeople
+            that.setProject.sppeople.toString()
           ).then((res) => {
             if (res.code == 1) {
               that.projectShow();
@@ -868,7 +904,7 @@ export default {
       this.percentage = 0;
       let that = this;
       if (that.taskData) {
-        var count  = 0;
+        var count = 0;
         that.taskData.forEach((e) => {
           if (e.ttype == that.value) {
             count = count + 1;

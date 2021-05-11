@@ -33,6 +33,11 @@
           >统计项目进度</el-button
         ></el-col
       >
+      <el-col :span="1" :offset="1"
+        ><el-button type="primary" @click="exp_sam" v-if="post == '项目经理'"
+          >导出项目</el-button
+        ></el-col
+      >
     </el-row>
     <el-row>
       <el-col :span="20" :offset="2">
@@ -632,6 +637,8 @@ export default {
         newpass1: [{ validator: resetPass1, trigger: "blur" }],
         newpass2: [{ validator: resetPass2, trigger: "blur" }],
       },
+      filterVal: ["pid", "pname", "ppeople", "pstart", "pend", "ptype"],
+      tHeader: ["项目号", "项目名", "人员", "开始时间", "结束时间", "项目状态"],
     };
   },
   computed: {
@@ -926,6 +933,18 @@ export default {
         });
       }
       this.percentage = (count / that.taskData.length) * 100;
+    },
+    // 导出
+    exp_sam() {
+      require.ensure([], () => {
+        const { export_json_to_excel } = require("../assets/Export2Excel.js");
+        const data = this.formatJson(this.filterVal, this.tableData);
+        export_json_to_excel(this.tHeader, data, "项目列表");
+      });
+    },
+    // map方法给表按excel格式排序
+    formatJson(filterVal, jsonData) {
+      return jsonData.map((v) => filterVal.map((j) => v[j]));
     },
   },
 };

@@ -238,7 +238,20 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="人员：" prop="cppeople">
-          <el-input v-model="changeProject.cppeople"></el-input>
+          <el-select
+            v-model="changeProject.cppeople"
+            multiple
+            collapse-tags
+            placeholder="请选择人员"
+          >
+            <el-option
+              v-for="item in people_options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -645,10 +658,11 @@ export default {
   methods: {
     // 显示项目列表
     async projectShow() {
+      console.log(this.uname);
       const projectData = await sel_project({
         params: {
           post: this.post,
-          dept: this.dept,
+          uname: this.uname,
         },
       });
       let data = projectData.data;

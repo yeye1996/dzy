@@ -32,7 +32,6 @@ server.post("/login", (req, res) => {
   let sql = "SELECT post , dept FROM user WHERE uname = ? AND upwd = md5(?)";
   let obj = { code: 1, msg: "登录成功", data: [] }
   pool.query(sql, [uname, upwd], (err, result) => {
-    console.log(result)
     if (err) throw err;
     if (result.length == 0) {
       // 管理员登录

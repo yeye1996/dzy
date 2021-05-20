@@ -26,10 +26,7 @@
         ></el-col
       >
       <el-col :span="1" :offset="1"
-        ><el-button
-          type="primary"
-          icon="el-icon-search"
-          @click="tjProjectShow = true"
+        ><el-button type="primary" icon="el-icon-search" @click="setgangte"
           >统计项目进度</el-button
         ></el-col
       >
@@ -79,7 +76,7 @@
               {{ scope.row.ptype }}
             </template>
           </el-table-column>
-          <el-table-column align="right" width="320">
+          <el-table-column align="right" width="320" v-if="post == '项目经理'">
             <template slot="header" slot-scope="scope">
               <el-input v-model="search" size="mini" placeholder="search" />
             </template>
@@ -283,7 +280,7 @@
         label-width="110px"
         style="width: 80%; margin: 0 auto; margin-top: 30px; text-align: left"
       >
-        <el-form-item label="项目名称：" style="text-align: left" prop="stname">
+        <el-form-item label="任务名称：" style="text-align: left" prop="stname">
           <el-input v-model="setTask.stname"></el-input>
         </el-form-item>
         <el-form-item label="始末时间：" prop="sttime">
@@ -325,7 +322,7 @@
         label-width="110px"
         style="width: 80%; margin: 0 auto; margin-top: 30px; text-align: left"
       >
-        <el-form-item label="项目名称：" style="text-align: left" prop="ctname"
+        <el-form-item label="任务名称：" style="text-align: left" prop="ctname"
           ><el-input v-model="changeTask.ctname"></el-input>
         </el-form-item>
         <el-form-item label="始末时间：">
@@ -407,25 +404,43 @@
       :close-on-press-escape="false"
       width="30%"
     >
-      <div style="margin-bottom: 20px">
-        <el-select v-model="value" placeholder="请选择">
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          >
-          </el-option>
-        </el-select>
-        <el-button type="primary" @click="setgangte">查 询</el-button>
-      </div>
       <div>
+        提前完成：
         <el-progress
           style="width: 55%; margin: 0 auto"
           :text-inside="true"
           :stroke-width="24"
-          :percentage="percentage"
+          :percentage="percentage[0]"
+        ></el-progress>
+      </div>
+      <div class="mt-3">
+        按时完成：
+        <el-progress
+          style="width: 55%; margin: 0 auto"
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="percentage[1]"
           status="success"
+        ></el-progress>
+      </div>
+      <div class="mt-3">
+        超时完成：
+        <el-progress
+          style="width: 55%; margin: 0 auto"
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="percentage[2]"
+          status="exception"
+        ></el-progress>
+      </div>
+      <div class="mt-3">
+        未完成：
+        <el-progress
+          style="width: 55%; margin: 0 auto"
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="percentage[3]"
+          status="exception"
         ></el-progress>
       </div>
     </el-dialog>
@@ -473,7 +488,7 @@ export default {
       tableData: [],
       taskData: [],
       search: "",
-      percentage: 20,
+      percentage: [0, 0, 0, 0],
       resetpasswordShow: false,
       changeProjectShow: false,
       setProjectShow: false,
@@ -499,7 +514,7 @@ export default {
           label: "未完成",
         },
       ],
-      value: "",
+      value: false,
       changeProject: {
         cpname: "",
         cptime: [],
@@ -665,7 +680,6 @@ export default {
   methods: {
     // 显示项目列表
     async projectShow() {
-      console.log(this.uname);
       const projectData = await sel_project({
         params: {
           post: this.post,
@@ -780,6 +794,7 @@ export default {
     // 显示任务列表
     taskShowMethod(row, column, event) {
       this.taskShow(row.pid);
+      this.value = true;
     },
     async taskShow(id) {
       const taskData_ = await sel_task({
@@ -924,15 +939,35 @@ export default {
     setgangte() {
       this.percentage = 0;
       let that = this;
-      if (that.taskData) {
-        var count = 0;
+      let count = 0,
+        count1 = 0,
+        count2 = 0,
+        count3 = 0;
+      if (that.value&&that.taskData) {
         that.taskData.forEach((e) => {
-          if (e.ttype == that.value) {
+          if (e.ttype == "提前完成") {
             count = count + 1;
           }
+          if (e.ttype == "按时完成") {
+            count1 = count1 + 1;
+          }
+          if (e.ttype == "超时完成") {
+            count2 = count2 + 1;
+          }
+          if (e.ttype == "未完成") {
+            count3 = count3 + 1;
+          }
         });
+        this.percentage = [
+          (count / that.taskData.length) * 100,
+          (count1 / that.taskData.length) * 100,
+          (count2 / that.taskData.length) * 100,
+          (count3 / that.taskData.length) * 100,
+        ];
+        this.tjProjectShow = true;
+      } else {
+        that.$message.error("选择一个不为空项目");
       }
-      this.percentage = (count / that.taskData.length) * 100;
     },
     // 导出
     exp_sam() {
